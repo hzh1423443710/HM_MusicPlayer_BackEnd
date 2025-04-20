@@ -16,15 +16,17 @@ bool UserDAO::createUser(User& user) {
 	try {
 		std::string hashed_passwd = PasswordUtil::hashPassword(user.passwd_hash);
 
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"INSERT INTO users (username, passwd_hash, email) VALUES (?, ?, ?)");
+		SqlConnGuard guard(db_manager->getConnection());
 
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"INSERT INTO users (username, passwd_hash, email) VALUES (?, ?, ?)"));
 		pstmt->setString(1, user.username);
 		pstmt->setString(2, hashed_passwd);
 		pstmt->setString(3, user.email);
 		pstmt->executeUpdate();
 
-		ResultSetPtr result = db_manager->executeQuery("SELECT LAST_INSERT_ID() AS id");
+		StmtPtr stmt(guard->createStatement());
+		ResultSetPtr result(stmt->executeQuery("SELECT LAST_INSERT_ID() AS id"));
 		if (result->next()) {
 			user.id = result->getInt("id");
 			return true;
@@ -39,9 +41,10 @@ bool UserDAO::createUser(User& user) {
 
 std::optional<User> UserDAO::getUserById(int id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("SELECT * FROM users WHERE id = ?");
-
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE id = ?"));
 		pstmt->setInt(1, id);
+
 		ResultSetPtr result(pstmt->executeQuery());
 		if (result->next()) {
 			return buildFromResultSet(result);
@@ -56,7 +59,8 @@ std::optional<User> UserDAO::getUserById(int id) {
 
 std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("SELECT * FROM users WHERE username = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE username = ?"));
 		pstmt->setString(1, username);
 
 		ResultSetPtr result(pstmt->executeQuery());
@@ -74,7 +78,8 @@ std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
 
 std::optional<User> UserDAO::getUserByEmail(const std::string& email) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("SELECT * FROM users WHERE email = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE email = ?"));
 		pstmt->setString(1, email);
 
 		ResultSetPtr result(pstmt->executeQuery());
@@ -92,8 +97,9 @@ std::optional<User> UserDAO::getUserByEmail(const std::string& email) {
 
 bool UserDAO::updateUser(const User& user) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"UPDATE users SET username = ?, email = ?, qq_id = ?, netease_id = ? WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"UPDATE users SET username = ?, email = ?, qq_id = ?, netease_id = ? WHERE id = ?"));
 
 		pstmt->setString(1, user.username);
 		pstmt->setString(2, user.email);
@@ -120,7 +126,8 @@ bool UserDAO::updateUser(const User& user) {
 
 bool UserDAO::deleteUser(int id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("DELETE FROM users WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("DELETE FROM users WHERE id = ?"));
 		pstmt->setInt(1, id);
 		int affected_row = pstmt->executeUpdate();
 
@@ -133,8 +140,9 @@ bool UserDAO::deleteUser(int id) {
 
 bool UserDAO::verifyPassword(const std::string& username_or_email, const std::string& password) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"SELECT passwd_hash FROM users WHERE username = ? OR email = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT passwd_hash FROM users WHERE username = ? OR email = ?"));
 		pstmt->setString(1, username_or_email);
 		pstmt->setString(2, username_or_email);
 		ResultSetPtr result(pstmt->executeQuery());
@@ -153,8 +161,8 @@ bool UserDAO::verifyPassword(const std::string& username_or_email, const std::st
 
 bool UserDAO::updatePassword(int user_id, const std::string& new_password) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("UPDATE users SET passwd_hash = ? WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET passwd_hash = ? WHERE id = ?"));
 		pstmt->setString(1, PasswordUtil::hashPassword(new_password));
 		pstmt->setInt(2, user_id);
 		int affected_row = pstmt->executeUpdate();
@@ -168,7 +176,8 @@ bool UserDAO::updatePassword(int user_id, const std::string& new_password) {
 
 bool UserDAO::updateQQId(int user_id, const std::string& qq_id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("UPDATE users SET qq_id = ? WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET qq_id = ? WHERE id = ?"));
 		pstmt->setString(1, qq_id);
 		pstmt->setInt(2, user_id);
 		int affected_row = pstmt->executeUpdate();
@@ -182,8 +191,8 @@ bool UserDAO::updateQQId(int user_id, const std::string& qq_id) {
 
 bool UserDAO::updateNetEaseId(int user_id, const std::string& netease_id) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("UPDATE users SET netease_id = ? WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET netease_id = ? WHERE id = ?"));
 		pstmt->setString(1, netease_id);
 		pstmt->setInt(2, user_id);
 		int affected_row = pstmt->executeUpdate();

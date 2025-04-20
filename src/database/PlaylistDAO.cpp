@@ -8,8 +8,9 @@ PlaylistDAO::PlaylistDAO() : db_manager{DBManager::getInstance()} {}
 
 bool PlaylistDAO::createPlaylist(Playlist& playlist) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"INSERT INTO playlists (name, user_id, cover) VALUES (?, ?, ?)");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"INSERT INTO playlists (name, user_id, cover) VALUES (?, ?, ?)"));
 		pstmt->setString(1, playlist.name);
 		pstmt->setInt(2, playlist.user_id);
 		if (playlist.cover.empty())
@@ -34,7 +35,8 @@ bool PlaylistDAO::createPlaylist(Playlist& playlist) {
 
 std::optional<Playlist> PlaylistDAO::getPlaylistById(int playlist_id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("SELECT * FROM playlists WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM playlists WHERE id = ?"));
 		pstmt->setInt(1, playlist_id);
 
 		ResultSetPtr result(pstmt->executeQuery());
@@ -51,8 +53,8 @@ std::optional<Playlist> PlaylistDAO::getPlaylistById(int playlist_id) {
 
 std::vector<Playlist> PlaylistDAO::getPlaylistsByUserId(int user_id) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("SELECT * FROM playlists WHERE user_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM playlists WHERE user_id = ?"));
 		pstmt->setInt(1, user_id);
 
 		ResultSetPtr result(pstmt->executeQuery());
@@ -72,8 +74,9 @@ std::vector<Playlist> PlaylistDAO::getPlaylistsByUserId(int user_id) {
 
 bool PlaylistDAO::updatePlaylist(const Playlist& playlist) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("UPDATE playlists SET name = ?, cover = ? WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(
+			guard->prepareStatement("UPDATE playlists SET name = ?, cover = ? WHERE id = ?"));
 		pstmt->setString(1, playlist.name);
 
 		if (playlist.cover.empty())
@@ -93,7 +96,8 @@ bool PlaylistDAO::updatePlaylist(const Playlist& playlist) {
 
 bool PlaylistDAO::deletePlaylist(int id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement("DELETE FROM playlists WHERE id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("DELETE FROM playlists WHERE id = ?"));
 		pstmt->setInt(1, id);
 		int affected_row = pstmt->executeUpdate();
 
@@ -106,10 +110,11 @@ bool PlaylistDAO::deletePlaylist(int id) {
 
 bool PlaylistDAO::addSongToPlaylist(int playlist_id, const Song& song) {
 	try {
+		SqlConnGuard guard(db_manager->getConnection());
 		// 是否已存在
-		PreStmtPtr pstmt = db_manager->prepareStatement(
+		PreStmtPtr pstmt(guard->prepareStatement(
 			"SELECT COUNT(*) as count FROM playlist_songs WHERE playlist_id = ? AND song_id = ? "
-			"AND song_where = ?");
+			"AND song_where = ?"));
 		pstmt->setInt(1, playlist_id);
 		pstmt->setString(2, song.song_id);
 		pstmt->setString(3, song.where);
@@ -120,9 +125,9 @@ bool PlaylistDAO::addSongToPlaylist(int playlist_id, const Song& song) {
 		}
 
 		// 插入
-		pstmt = db_manager->prepareStatement(
+		pstmt.reset(guard->prepareStatement(
 			"INSERT INTO playlist_songs (playlist_id, song_id, song_name, song_singer, song_pic, "
-			"song_where) VALUES (?, ?, ?, ?, ?, ?)");
+			"song_where) VALUES (?, ?, ?, ?, ?, ?)"));
 		pstmt->setInt(1, playlist_id);
 		pstmt->setString(2, song.song_id);
 		pstmt->setString(3, song.name);
@@ -145,9 +150,10 @@ bool PlaylistDAO::addSongToPlaylist(int playlist_id, const Song& song) {
 bool PlaylistDAO::removeSongFromPlaylist(int playlist_id, const std::string& song_id,
 										 std::string& song_source) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"DELETE FROM playlist_songs WHERE playlist_id = ? "
-			"AND song_id = ? && song_where = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(
+			guard->prepareStatement("DELETE FROM playlist_songs WHERE playlist_id = ? "
+									"AND song_id = ? && song_where = ?"));
 
 		pstmt->setInt(1, playlist_id);
 		pstmt->setString(2, song_id);
@@ -163,8 +169,9 @@ bool PlaylistDAO::removeSongFromPlaylist(int playlist_id, const std::string& son
 
 std::vector<Song> PlaylistDAO::getSongsInPlaylist(int playlist_id) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("SELECT * FROM playlist_songs WHERE playlist_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(
+			guard->prepareStatement("SELECT * FROM playlist_songs WHERE playlist_id = ?"));
 		pstmt->setInt(1, playlist_id);
 		ResultSetPtr result(pstmt->executeQuery());
 
@@ -183,8 +190,9 @@ std::vector<Song> PlaylistDAO::getSongsInPlaylist(int playlist_id) {
 
 int PlaylistDAO::countSongsInPlaylist(int playlist_id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"SELECT COUNT(*) as count FROM playlist_songs WHERE playlist_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT COUNT(*) as count FROM playlist_songs WHERE playlist_id = ?"));
 
 		pstmt->setInt(1, playlist_id);
 		ResultSetPtr result(pstmt->executeQuery());

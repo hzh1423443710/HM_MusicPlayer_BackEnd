@@ -9,13 +9,26 @@
 
 void test_user_dao() {
 	UserDAO user_dao;
-	User user{
-		.id = 3,
-		.username = "hzh",
-		.passwd_hash = "12345678",
-		.email = "142344@qq.com",
-		.qq_id = "1423443710",
-	};
+	User user{.id = 3,
+			  .username = "hzh",
+			  .passwd_hash = "123456",
+			  .email = "142344@qq.com",
+			  .qq_id = "1423443710"};
+
+	if (user_dao.createUser(user)) {
+		std::cout << "User created successfully!\n";
+	} else {
+		std::cout << "Failed to create user!\n";
+	}
+
+	auto ret_user = user_dao.getUserByUsername("hzh");
+	if (ret_user) {
+		std::cout << "User found: " << ret_user->username << "\n";
+	} else {
+		std::cout << "User not found!\n";
+	}
+
+	user_dao.updatePassword(ret_user->id, "12345678");
 
 	if (user_dao.verifyPassword("hzh", "12345678")) {
 		std::cout << "Password verified successfully!\n";

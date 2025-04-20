@@ -74,24 +74,31 @@ DBManager* DBManager::getInstance() {
 	return m_instance.get();
 }
 
-SqlConnPtr DBManager::getConnection() {
-	std::lock_guard<std::mutex> lock(m_mtx);
+SqlConnPtr DBManager::getConnection(std::chrono::seconds timeout) {
+	SqlConnPtr conn;
+	{
+		std::unique_lock<std::mutex> lock(m_mtx);
+		if (m_connections.empty()) {
+			m_cv.wait_for(lock, timeout, [this]() { return !m_connections.empty(); });
+		}
 
-	if (m_connections.empty()) {
-		throw std::runtime_error("Database connection pool is empty");
+		if (m_connections.empty()) {
+			spdlog::error("{} No available connection", TAG);
+			return nullptr;
+		}
+
+		conn = m_connections.front();
+		m_connections.pop_front();
 	}
-
-	// 轮询分配连接
-	SqlConnPtr conn = m_connections[m_next_conn];
-	m_next_conn = (m_next_conn + 1) % m_connections.size();
 
 	try {
 		// 无效重新连接
 		if (!conn->isValid()) {
 			spdlog::warn("{} Connection is not valid, try to reconnect", TAG);
-			conn->close();
-			conn.reset(m_driver->connect("tcp://" + m_host + ":" + std::to_string(m_port), m_user,
-										 m_passwd));
+			conn->reconnect();
+			// conn->close();
+			// conn.reset(m_driver->connect("tcp://" + m_host + ":" + std::to_string(m_port),
+			// m_user, m_passwd));
 			conn->setSchema(m_db_name);
 		}
 
@@ -103,55 +110,8 @@ SqlConnPtr DBManager::getConnection() {
 	return conn;
 }
 
-PreStmtPtr DBManager::prepareStatement(const std::string& sql) {
-	SqlConnPtr conn = getConnection();
-
-	try {
-		return PreStmtPtr(conn->prepareStatement(sql));
-
-	} catch (sql::SQLException& e) {
-		spdlog::error("{} Prepare SQL failed: {}, Error Code:{}, SQLState:{}", TAG, e.what(),
-					  e.getErrorCode(), e.getSQLStateCStr());
-		throw;
-	}
-}
-
-bool DBManager::execute(const std::string& sql) {
-	SqlConnPtr conn = getConnection();
-
-	try {
-		std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-		return stmt->execute(sql);
-
-	} catch (sql::SQLException& e) {
-		spdlog::error("{} Execute SQL failed: {}, Error Code:{}, SQLState:{}", TAG, e.what(),
-					  e.getErrorCode(), e.getSQLStateCStr());
-		return false;
-	}
-}
-
-ResultSetPtr DBManager::executeQuery(const std::string& sql) {
-	SqlConnPtr conn = getConnection();
-	try {
-		std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-		return ResultSetPtr(stmt->executeQuery(sql));
-
-	} catch (sql::SQLException& e) {
-		spdlog::error("{} Execute SQL Query failed: {}, Error Code:{}, SQLState:{}", TAG, e.what(),
-					  e.getErrorCode(), e.getSQLStateCStr());
-		return nullptr;
-	}
-}
-
-int DBManager::executeUpdate(const std::string& sql) {
-	SqlConnPtr conn = getConnection();
-	try {
-		std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-		return stmt->executeUpdate(sql);
-
-	} catch (sql::SQLException& e) {
-		spdlog::error("{} Execute SQL Update failed: {}, Error Code:{}, SQLState:{}", TAG, e.what(),
-					  e.getErrorCode(), e.getSQLStateCStr());
-		return -1;
-	}
+void DBManager::releaseConnection(const SqlConnPtr& conn) {
+	std::lock_guard<std::mutex> lock(m_mtx);
+	m_connections.push_back(conn);
+	m_cv.notify_one();
 }

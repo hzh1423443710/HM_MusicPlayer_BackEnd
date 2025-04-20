@@ -1,9 +1,9 @@
 #include "PlayHistoryDAO.h"
+#include <vector>
 #include <spdlog/spdlog.h>
 #include <jdbc/cppconn/exception.h>
 #include <jdbc/cppconn/prepared_statement.h>
 #include <jdbc/cppconn/resultset.h>
-#include <vector>
 #include "DBManager.h"
 
 constexpr const char* TAG = "[PlayHistoryDAO]";
@@ -12,41 +12,43 @@ PlayHistoryDAO::PlayHistoryDAO() : db_manager{DBManager::getInstance()} {}
 
 bool PlayHistoryDAO::addPlayHistory(const PlayHistory& history) {
 	try {
-		// 查询是否 已存在
-		PreStmtPtr check_pstmt = db_manager->prepareStatement(
-			"SELECT id, song_count FROM play_history WHERE user_id = ? AND song_id = ?");
-		check_pstmt->setInt(1, history.user_id);
-		check_pstmt->setString(2, history.song_id);
+		SqlConnGuard guard(db_manager->getConnection());
 
-		ResultSetPtr check_result(check_pstmt->executeQuery());
+		// 1.查询是否 已存在
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT id, song_count FROM play_history WHERE user_id = ? AND song_id = ?"));
+		pstmt->setInt(1, history.user_id);
+		pstmt->setString(2, history.song_id);
+
+		ResultSetPtr check_result(pstmt->executeQuery());
 		if (check_result->next()) {
 			int song_count = check_result->getInt("song_count");
 			int id = check_result->getInt("id");
 
 			// 更新播放次数
-			PreStmtPtr update_pstmt =
-				db_manager->prepareStatement("UPDATE play_history SET song_count = ? WHERE id = ?");
-			update_pstmt->setInt(1, song_count + 1);
-			update_pstmt->setInt(2, id);
+			pstmt.reset(
+				guard->prepareStatement("UPDATE play_history SET song_count = ? WHERE id = ?"));
+			pstmt->setInt(1, song_count + 1);
+			pstmt->setInt(2, id);
 
-			return update_pstmt->executeUpdate() > 0;
+			return pstmt->executeUpdate() > 0;
 		}
 
 		// 插入新的播放记录
-		PreStmtPtr insert_pstmt = db_manager->prepareStatement(
+		pstmt.reset(guard->prepareStatement(
 			"INSERT INTO play_history (user_id, song_id, song_name, song_singer, song_pic, "
-			"song_where, played_at) VALUES (?, ?, ?, ?, ?, ?)");
-		insert_pstmt->setInt(1, history.user_id);
-		insert_pstmt->setString(2, history.song_id);
-		insert_pstmt->setString(3, history.song_name);
-		insert_pstmt->setString(4, history.song_singer);
+			"song_where, played_at) VALUES (?, ?, ?, ?, ?, ?)"));
+		pstmt->setInt(1, history.user_id);
+		pstmt->setString(2, history.song_id);
+		pstmt->setString(3, history.song_name);
+		pstmt->setString(4, history.song_singer);
 		if (!history.song_pic.empty())
-			insert_pstmt->setString(5, history.song_pic);
+			pstmt->setString(5, history.song_pic);
 		else
-			insert_pstmt->setNull(5, sql::DataType::VARCHAR);
-		insert_pstmt->setString(6, history.song_where);
+			pstmt->setNull(5, sql::DataType::VARCHAR);
+		pstmt->setString(6, history.song_where);
 
-		return insert_pstmt->executeUpdate() > 0;
+		return pstmt->executeUpdate() > 0;
 	} catch (sql::SQLException& e) {
 		spdlog::error("{} Add play history failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
@@ -56,9 +58,10 @@ bool PlayHistoryDAO::addPlayHistory(const PlayHistory& history) {
 std::vector<PlayHistory> PlayHistoryDAO::getUserPlayHistory(int user_id, int limit, int offset) {
 	std::vector<PlayHistory> history_list;
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
 			"SELECT * FROM play_history WHERE user_id = ? ORDER BY played_at DESC LIMIT ? OFFSET "
-			"?");
+			"?"));
 
 		pstmt->setInt(1, user_id);
 		pstmt->setInt(2, limit);
@@ -81,8 +84,8 @@ std::vector<PlayHistory> PlayHistoryDAO::getUserPlayHistory(int user_id, int lim
 
 bool PlayHistoryDAO::clearUserPlayHistory(int user_id) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("DELETE FROM play_history WHERE user_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement("DELETE FROM play_history WHERE user_id = ?"));
 		pstmt->setInt(1, user_id);
 		int affected_rows = pstmt->executeUpdate();
 
@@ -96,8 +99,9 @@ bool PlayHistoryDAO::clearUserPlayHistory(int user_id) {
 
 bool PlayHistoryDAO::deletePlayHistory(int history_id, int user_id) {
 	try {
-		PreStmtPtr pstmt =
-			db_manager->prepareStatement("DELETE FROM play_history WHERE id = ? AND user_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(
+			guard->prepareStatement("DELETE FROM play_history WHERE id = ? AND user_id = ?"));
 		pstmt->setInt(1, history_id);
 		pstmt->setInt(2, user_id);
 		int affected_rows = pstmt->executeUpdate();
@@ -112,8 +116,9 @@ bool PlayHistoryDAO::deletePlayHistory(int history_id, int user_id) {
 
 int PlayHistoryDAO::getUserTotalPlayCount(int user_id) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"SELECT COUNT(*) AS count FROM play_history WHERE user_id = ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT COUNT(*) AS count FROM play_history WHERE user_id = ?"));
 
 		pstmt->setInt(1, user_id);
 		ResultSetPtr result(pstmt->executeQuery());
@@ -132,9 +137,10 @@ int PlayHistoryDAO::getUserTotalPlayCount(int user_id) {
 
 int PlayHistoryDAO::getUserRecentPlayCount(int user_id, int days) {
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
 			"SELECT COUNT(*) AS count FROM play_history WHERE user_id = ? AND played_at >= NOW() - "
-			"INTERVAL ? DAY");
+			"INTERVAL ? DAY"));
 
 		pstmt->setInt(1, user_id);
 		pstmt->setInt(2, days);
@@ -156,9 +162,10 @@ std::vector<std::pair<std::string, int>> PlayHistoryDAO::getUserTopArtists(int u
 	std::vector<std::pair<std::string, int>> artists;
 
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
 			"SELECT song_singer, SUM(song_count) AS total_plays FROM play_history WHERE user_id = "
-			"? GROUP BY song_singer ORDER BY total_plays DESC LIMIT ?");
+			"? GROUP BY song_singer ORDER BY total_plays DESC LIMIT ?"));
 
 		pstmt->setInt(1, user_id);
 		pstmt->setInt(2, limit);
@@ -182,8 +189,9 @@ std::vector<Song> PlayHistoryDAO::getUserTopSongs(int user_id, int limit) {
 	std::vector<Song> songs;
 
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"SELECT * FROM play_history WHERE user_id = ? ORDER BY song_count DESC LIMIT ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT * FROM play_history WHERE user_id = ? ORDER BY song_count DESC LIMIT ?"));
 
 		pstmt->setInt(1, user_id);
 		pstmt->setInt(2, limit);
@@ -206,8 +214,9 @@ std::vector<std::pair<PlayHistory, int>> PlayHistoryDAO::getMostPlayedSongs(int 
 	std::vector<std::pair<PlayHistory, int>> songs;
 
 	try {
-		PreStmtPtr pstmt = db_manager->prepareStatement(
-			"SELECT * FROM play_history WHERE user_id = ? ORDER BY song_count DESC LIMIT ?");
+		SqlConnGuard guard(db_manager->getConnection());
+		PreStmtPtr pstmt(guard->prepareStatement(
+			"SELECT * FROM play_history WHERE user_id = ? ORDER BY song_count DESC LIMIT ?"));
 		pstmt->setInt(1, user_id);
 		pstmt->setInt(2, limit);
 

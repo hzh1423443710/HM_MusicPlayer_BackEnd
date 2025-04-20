@@ -12,7 +12,9 @@ class UserDAO {
 public:
 	UserDAO();
 
-	// 用户 CRUD
+	/**
+	 * @brief 创建用户(username, email, passwd)
+	 */
 	bool createUser(User& user);
 	std::optional<User> getUserById(int id);
 	std::optional<User> getUserByUsername(const std::string& username);
