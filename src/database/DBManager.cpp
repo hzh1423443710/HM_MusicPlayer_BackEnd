@@ -23,13 +23,13 @@ DBManager::~DBManager() {
 		try {
 			conn->close();
 		} catch (sql::SQLException& e) {
-			spdlog::error("{} Close connection failed: {}, Error Code:{}, SQLState:{}", TAG,
-						  e.what(), e.getErrorCode(), e.getSQLStateCStr());
+			spdlog::error(TAG, "Close connection failed: {}, Error Code:{}, SQLState:{}", e.what(),
+						  e.getErrorCode(), e.getSQLStateCStr());
 		}
 	}
 
 	m_connections.clear();
-	spdlog::info("{} Close connection pool success", TAG);
+	spdlog::info(TAG, "Close connection pool success");
 }
 
 DBManager::DBManager(std::string host, uint16_t port, std::string user, std::string passwd,
@@ -50,10 +50,10 @@ DBManager::DBManager(std::string host, uint16_t port, std::string user, std::str
 			this->m_connections.push_back(SqlConnPtr{conn});
 		}
 
-		spdlog::info("{} Create connection pool success, size: {}", TAG, pool_size);
+		spdlog::info(TAG, "Create connection pool success, size: {}", pool_size);
 	} catch (sql::SQLException& e) {
 		spdlog::critical(
-			"{} Create connection pool failed: {}, HostName:{}, Error Code:{}, SQLState:{}", TAG,
+			TAG, "Create connection pool failed: {}, HostName:{}, Error Code:{}, SQLState:{}",
 			e.what(), host_name, e.getErrorCode(), e.getSQLStateCStr());
 	}
 }
@@ -83,7 +83,7 @@ SqlConnPtr DBManager::getConnection(std::chrono::seconds timeout) {
 		}
 
 		if (m_connections.empty()) {
-			spdlog::error("{} No available connection", TAG);
+			spdlog::error(TAG, "No available connection");
 			return nullptr;
 		}
 
@@ -94,7 +94,7 @@ SqlConnPtr DBManager::getConnection(std::chrono::seconds timeout) {
 	try {
 		// 无效重新连接
 		if (!conn->isValid()) {
-			spdlog::warn("{} Connection is not valid, try to reconnect", TAG);
+			spdlog::warn(TAG, "Connection is not valid, try to reconnect");
 			conn->reconnect();
 			// conn->close();
 			// conn.reset(m_driver->connect("tcp://" + m_host + ":" + std::to_string(m_port),
@@ -103,7 +103,7 @@ SqlConnPtr DBManager::getConnection(std::chrono::seconds timeout) {
 		}
 
 	} catch (sql::SQLException& e) {
-		spdlog::error("{} Reconnect failed: {}, Error Code:{}, SQLState:{}", TAG, e.what(),
+		spdlog::error(TAG, "Reconnect failed: {}, Error Code:{}, SQLState:{}", e.what(),
 					  e.getErrorCode(), e.getSQLStateCStr());
 	}
 

@@ -34,7 +34,7 @@ bool UserDAO::createUser(User& user) {
 
 		return false;
 	} catch (sql::SQLException& e) {
-		spdlog::error("{} Create User Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Create User Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -52,7 +52,7 @@ std::optional<User> UserDAO::getUserById(int id) {
 
 		return std::nullopt;
 	} catch (sql::SQLException& e) {
-		spdlog::error("{} Get User By ID Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Get User By ID Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return std::nullopt;
 	}
 }
@@ -70,8 +70,7 @@ std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
 
 		return std::nullopt;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Get User By Username Failed: {}, Code:{}", TAG, e.what(),
-					  e.getErrorCode());
+		spdlog::error(TAG, "Get User By Username Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return std::nullopt;
 	}
 }
@@ -90,7 +89,7 @@ std::optional<User> UserDAO::getUserByEmail(const std::string& email) {
 		return std::nullopt;
 
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Get User By Email Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Get User By Email Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return std::nullopt;
 	}
 }
@@ -119,7 +118,7 @@ bool UserDAO::updateUser(const User& user) {
 
 		return affected_row > 0;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Update User Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Update User Failed: {}, Code: {}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -133,7 +132,7 @@ bool UserDAO::deleteUser(int id) {
 
 		return affected_row > 0;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Delete User Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Delete User Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -154,7 +153,7 @@ bool UserDAO::verifyPassword(const std::string& username_or_email, const std::st
 
 		return false;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Verify Password Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Verify Password Failed: {}, Code: {}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -169,7 +168,7 @@ bool UserDAO::updatePassword(int user_id, const std::string& new_password) {
 
 		return affected_row > 0;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Update Password Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Update Password Failed: {}, Code:{}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -184,7 +183,7 @@ bool UserDAO::updateQQId(int user_id, const std::string& qq_id) {
 
 		return affected_row > 0;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Update QQ ID Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Update QQ ID Failed: {}, Code: {}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -199,7 +198,7 @@ bool UserDAO::updateNetEaseId(int user_id, const std::string& netease_id) {
 
 		return affected_row > 0;
 	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Update NetEase ID Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
+		spdlog::error(TAG, "Update NetEase ID Failed: {}, Code: {}", e.what(), e.getErrorCode());
 		return false;
 	}
 }
