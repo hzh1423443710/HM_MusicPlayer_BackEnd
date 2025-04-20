@@ -1,0 +1,15 @@
+# Qt
+CMakeLists.txt.user
+
+# cmake
+build/
+
+# vscode
+.cache/
+.vscode/
+
+# Nodejs
+node_modules/
+
+# redis
+dump.rdb

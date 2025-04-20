@@ -1,0 +1,67 @@
+USE HW_MusicPlayer;
+
+# 删除所有表
+DROP TABLE IF EXISTS playlist_songs;
+DROP TABLE IF EXISTS play_history;
+DROP TABLE IF EXISTS playlists;
+DROP TABLE IF EXISTS users;
+
+
+-- 用户表
+CREATE TABLE users (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	passwd_hash VARCHAR(255) NOT NULL,
+	email VARCHAR(50) UNIQUE NOT NULL,
+	qq_id VARCHAR(50),
+	netease_id VARCHAR(50),
+	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 歌单表
+CREATE TABLE playlists (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	name VARCHAR(50) NOT NULL, -- 歌单名
+	cover VARCHAR(255),
+	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 歌单歌曲表
+CREATE TABLE playlist_songs (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	
+	playlist_id INT NOT NULL,
+	song_id VARCHAR(50) NOT NULL,
+	song_name VARCHAR(255) NOT NULL,
+	song_singer VARCHAR(255) NOT NULL,
+	song_pic VARCHAR(255),
+	song_where ENUM('QQ','NetEase') NOT NULL,
+	
+	added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	
+	FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
+	UNIQUE KEY(playlist_id, song_id, song_where)
+);
+
+-- 播放历史表
+CREATE TABLE play_history(
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT  NOT NULL,
+	
+	song_id VARCHAR(50) NOT NULL,
+	song_name VARCHAR(255) NOT NULL,
+	song_singer VARCHAR(255) NOT NULL,
+	song_pic VARCHAR(255),
+	song_where ENUM('QQ','NetEase') NOT NULL,
+	song_count INT DEFAULT 0, -- 播放次数
+	
+	played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+

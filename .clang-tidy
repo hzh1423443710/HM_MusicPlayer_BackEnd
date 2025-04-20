@@ -1,0 +1,33 @@
+Checks: >
+  -*,
+
+  modernize-*,
+  -modernize-use-trailing-return-type,
+
+  readability-*,
+  -readability-braces-around-statements,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-redundant-access-specifiers,
+
+  bugpropr-*,
+  performance-*,
+  -performance-enum-size,
+
+  portability-*,
+
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-owning-memory,
+
+  -misc-unused-parameters,
+
+# 对所有文件进行检查
+HeaderFilterRegex: '.*'
+# 不将警告作为错误
+WarningsAsErrors: ''
+
+# https://clang.llvm.org/extra/clang-tidy/checks/list.html
