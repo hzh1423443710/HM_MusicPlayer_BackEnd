@@ -10,7 +10,13 @@
  */
 class Session : public std::enable_shared_from_this<Session> {
 public:
+	Session(const Session&) = delete;
+	Session(Session&&) = delete;
+	Session& operator=(const Session&) = delete;
+	Session& operator=(Session&&) = delete;
+
 	Session(tcp::socket socket, Router& router);
+	~Session();
 
 	void run();
 

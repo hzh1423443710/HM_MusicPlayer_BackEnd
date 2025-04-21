@@ -11,11 +11,7 @@
 constexpr const char* TAG = "[Server]";
 
 Server::Server(const std::string& ip, uint16_t port, int num_threads)
-	: m_addr(ip),
-	  m_port(port),
-	  m_num_threads(num_threads),
-	  m_ioc(m_num_threads),
-	  m_acceptor(m_ioc) {
+	: m_addr(ip), m_port(port), m_num_threads(num_threads), m_ioc(num_threads), m_acceptor(m_ioc) {
 	m_work_guards = std::make_shared<work_guard>(m_ioc.get_executor());
 
 	tcp::endpoint ep;

@@ -5,6 +5,7 @@
 #include <boost/beast/core/stream_traits.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/http/error.hpp>
+#include <boost/beast/http/field.hpp>
 #include <boost/beast/http/status.hpp>
 #include <boost/beast/http/write.hpp>
 #include <spdlog/spdlog.h>
@@ -13,6 +14,10 @@ constexpr const char* TAG = "[Session]";
 
 Session::Session(tcp::socket socket, Router& router)
 	: m_socket(std::move(socket)), m_router{router} {}
+
+Session::~Session() {
+	// spdlog::info("{} Session closed", TAG);
+}
 
 void Session::run() { doRead(); }
 
@@ -45,22 +50,22 @@ void Session::doWrite() {
 							  return;
 						  }
 
-						  // 保持连接
+						  // 关闭连接
 						  if (self->m_response.need_eof()) {
 							  beast::error_code ec;
 							  self->m_socket.shutdown(tcp::socket::shutdown_send, ec);
 							  return;
 						  }
 
-						  // 继续读取下一个请求
+						  self->m_request = {};
+						  // 保持连接
 						  self->doRead();
 					  });
 }
 
 void Session::handleRequest() {
 	try {
-		m_response = m_router.router(m_request);
-		spdlog::info("{} {} {}", TAG, m_request.method_string(), m_request.target());
+		m_response = m_router.handleRouter(m_request);
 	} catch (const std::exception& e) {
 		// 500 错误
 		spdlog::error("{} Handle Request: {}", TAG, e.what());
