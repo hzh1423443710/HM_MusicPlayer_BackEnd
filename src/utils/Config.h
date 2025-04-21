@@ -56,6 +56,8 @@ public:
 
 	const ServerConfig& getServerConfig() const { return m_server_config; }
 
+	const JWTConfig& getJWTConfig() const { return m_jwt_config; }
+
 	const LogConfig& getLogConfig() const { return m_log_config; }
 
 private:

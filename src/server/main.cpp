@@ -2,6 +2,7 @@
 #include "../database/DBManager.h"
 #include "../utils/JsonUtil.h"
 #include "../utils/Config.h"
+#include "../handlers/UserHandler.h"
 
 #include <spdlog/common.h>
 #include <spdlog/spdlog.h>
@@ -52,9 +53,11 @@ int main() {
 
 void setupRoutes(Server& server) {
 	// 处理器
+	auto user_handler = std::make_shared<UserHandler>(Config::getInstance()->getJWTConfig().secret);
 
 	server.addRouter(http::verb::get, std::regex("/?"), [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(request.version(), "Welcome to HW Music Player!");
+		return JsonUtil::buildSuccessResponse(
+			request.version(), json{{"message", "Welcome to HarmonyOS Music Player!"}}.dump());
 	});
 
 	/**
@@ -62,15 +65,13 @@ void setupRoutes(Server& server) {
 	 */
 	// 用户注册 	POST /users/register
 	server.addRouter(http::verb::post, std::regex("/users/register\\s*"),
-					 [](const HttpRequest& request) {
-						 return JsonUtil::buildSuccessResponse(request.version(),
-															   "User registered successfully");
+					 [user_handler](const HttpRequest& request) {
+						 return user_handler->handleRegister(request);
 					 });
 	// 用户登录 	POST /users/login
 	server.addRouter(
-		http::verb::post, std::regex("/users/login\\s*"), [](const HttpRequest& request) {
-			return JsonUtil::buildSuccessResponse(request.version(), "User logged in successfully");
-		});
+		http::verb::post, std::regex("/users/login\\s*"),
+		[user_handler](const HttpRequest& request) { return user_handler->handleLogin(request); });
 	// 用户信息 	GET /users/{id}
 	server.addRouter(http::verb::get, std::regex("/users/[0-9]+\\s*"),
 					 [](const HttpRequest& request) {
@@ -90,11 +91,11 @@ void setupRoutes(Server& server) {
 						 return JsonUtil::buildSuccessResponse(request.version(), j.dump());
 					 });
 	// 修改密码 PUT /users/{id}/password
-	server.addRouter(http::verb::put, std::regex("/users/[0-9]+/password\\s*"),
-					 [](const HttpRequest& request) {
-						 return JsonUtil::buildSuccessResponse(
-							 request.version(), "User password updated successfully");
-					 });
+	server.addRouter(
+		http::verb::put, std::regex("/users/[0-9]+/password\\s*"), [](const HttpRequest& request) {
+			return JsonUtil::buildSuccessResponse(
+				request.version(), json{{"message", "Password updated successfully"}}.dump());
+		});
 
 	/**
 	 * @brief 歌单路由
@@ -102,7 +103,7 @@ void setupRoutes(Server& server) {
 	// 歌单列表 		GET /playlists
 	server.addRouter(http::verb::get, std::regex("/playlists\\s*"), [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
-											  "Playlists retrieved successfully");
+											  json{{"Playlists retrieved successfully"}}.dump());
 	});
 	// 歌单所有歌曲 	 GET /playlists/{id}/songs
 	server.addRouter(http::verb::get, std::regex("/playlists/[0-9]+/songs\\s*"),
@@ -133,8 +134,8 @@ void setupRoutes(Server& server) {
 	// 歌单创建 		POST /playlists
 	server.addRouter(http::verb::post, std::regex("/playlists\\s*"),
 					 [](const HttpRequest& request) {
-						 return JsonUtil::buildSuccessResponse(request.version(),
-															   "Playlist created successfully");
+						 return JsonUtil::buildSuccessResponse(
+							 request.version(), json{{"Playlist created successfully"}}.dump());
 					 });
 	// 歌单删除 		DELETE /playlists/{id}
 	server.addRouter(http::verb::delete_, std::regex("/playlists/[0-9]+\\s*"),
@@ -150,11 +151,13 @@ void setupRoutes(Server& server) {
 	 */
 	// 播放历史所有歌曲 	GET /history
 	server.addRouter(http::verb::get, std::regex("/history\\s*"), [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(request.version(), "All songs in history retrieved");
+		return JsonUtil::buildSuccessResponse(request.version(),
+											  json{{"All songs in history retrieved"}}.dump());
 	});
 	// 播放历史添加歌曲 	POST /history
 	server.addRouter(http::verb::post, std::regex("/history\\s*"), [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(request.version(), "Song added to history");
+		return JsonUtil::buildSuccessResponse(request.version(),
+											  json{{"Song added to history"}}.dump());
 	});
 	// 播放历史删除歌曲 	DELETE /history/{id}
 	server.addRouter(http::verb::delete_, std::regex("/history/[0-9]+\\s*"),
@@ -165,10 +168,11 @@ void setupRoutes(Server& server) {
 						 return JsonUtil::buildSuccessResponse(request.version(), j.dump());
 					 });
 	// 播放历史清空 		DELETE /history
-	server.addRouter(
-		http::verb::delete_, std::regex("/history\\s*"), [](const HttpRequest& request) {
-			return JsonUtil::buildSuccessResponse(request.version(), "History cleared");
-		});
+	server.addRouter(http::verb::delete_, std::regex("/history\\s*"),
+					 [](const HttpRequest& request) {
+						 return JsonUtil::buildSuccessResponse(request.version(),
+															   json{{"History cleared"}}.dump());
+					 });
 
 	// 用户最常听的歌曲
 	server.addRouter(http::verb::get, std::regex("/history/most_played(\\?.*)?\\s*"),

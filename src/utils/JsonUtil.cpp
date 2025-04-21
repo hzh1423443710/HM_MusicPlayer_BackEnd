@@ -20,12 +20,12 @@ HttpResponse JsonUtil::buildErrorResponse(const http::status& status, unsigned i
 	return res;
 }
 
-HttpResponse JsonUtil::buildSuccessResponse(unsigned int version, const std::string& message) {
+HttpResponse JsonUtil::buildSuccessResponse(unsigned int version, const std::string& json_msg) {
 	HttpResponse res{http::status::ok, version};
 	res.set(http::field::content_type, "application/json");
 	res.set(http::field::server, "MusicPlayer-BackEnd");
 
-	res.body() = json{{"message", message}}.dump();
+	res.body() = json_msg;
 	res.prepare_payload();
 
 	return res;

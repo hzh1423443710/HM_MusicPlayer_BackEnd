@@ -17,8 +17,7 @@ public:
 	 */
 	bool createUser(User& user);
 	std::optional<User> getUserById(int id);
-	std::optional<User> getUserByUsername(const std::string& username);
-	std::optional<User> getUserByEmail(const std::string& email);
+	std::optional<User> getUserByUsernameOrEmail(const std::string& username_or_email);
 
 	/**
 	 * @brief 更新 username, email, qq_id, netease_id

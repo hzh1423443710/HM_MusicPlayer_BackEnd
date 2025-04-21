@@ -13,8 +13,7 @@ public:
 	static HttpResponse buildErrorResponse(const http::status& status, unsigned int version,
 										   const std::string& message = "Internal Server Error");
 
-	static HttpResponse buildSuccessResponse(unsigned int version,
-											 const std::string& message = "OK");
+	static HttpResponse buildSuccessResponse(unsigned int version, const std::string& json_msg);
 
 	// 获取路径参数
 	static std::vector<std::string> getPathParams(std::string_view path);

@@ -57,11 +57,13 @@ std::optional<User> UserDAO::getUserById(int id) {
 	}
 }
 
-std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
+std::optional<User> UserDAO::getUserByUsernameOrEmail(const std::string& username_or_email) {
 	try {
 		SqlConnGuard guard(db_manager->getConnection());
-		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE username = ?"));
-		pstmt->setString(1, username);
+		PreStmtPtr pstmt(
+			guard->prepareStatement("SELECT * FROM users WHERE username = ? OR email = ?"));
+		pstmt->setString(1, username_or_email);
+		pstmt->setString(2, username_or_email);
 
 		ResultSetPtr result(pstmt->executeQuery());
 		if (result->next()) {
@@ -69,28 +71,9 @@ std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
 		}
 
 		return std::nullopt;
-	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Get User By Username Failed: {}, Code:{}", TAG, e.what(),
+	} catch (sql::SQLException& e) {
+		spdlog::error("{} Get User By Username or Email Failed: {}, Code:{}", TAG, e.what(),
 					  e.getErrorCode());
-		return std::nullopt;
-	}
-}
-
-std::optional<User> UserDAO::getUserByEmail(const std::string& email) {
-	try {
-		SqlConnGuard guard(db_manager->getConnection());
-		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE email = ?"));
-		pstmt->setString(1, email);
-
-		ResultSetPtr result(pstmt->executeQuery());
-		if (result->next()) {
-			return buildFromResultSet(result);
-		}
-
-		return std::nullopt;
-
-	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Get User By Email Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
 		return std::nullopt;
 	}
 }
