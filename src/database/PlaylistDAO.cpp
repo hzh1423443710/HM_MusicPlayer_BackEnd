@@ -30,7 +30,7 @@ bool PlaylistDAO::createPlaylist(Playlist& playlist) {
 
 		return false;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Create playlist failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Create playlist failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -48,7 +48,8 @@ std::optional<Playlist> PlaylistDAO::getPlaylistById(int playlist_id) {
 
 		return std::nullopt;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get playlist by id failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Get playlist by id failed: {}, Code: {}", TAG, e.what(),
+					  e.getErrorCode());
 		return std::nullopt;
 	}
 }
@@ -69,7 +70,7 @@ std::vector<Playlist> PlaylistDAO::getPlaylistsByUserId(int user_id) {
 
 		return playlists;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get playlists by user id failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get playlists by user id failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return {};
 	}
@@ -92,7 +93,7 @@ bool PlaylistDAO::updatePlaylist(const Playlist& playlist) {
 
 		return affected_row > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Update playlist failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Update playlist failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -106,7 +107,7 @@ bool PlaylistDAO::deletePlaylist(int id) {
 
 		return affected_row > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Delete playlist failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Delete playlist failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -145,7 +146,8 @@ bool PlaylistDAO::addSongToPlaylist(int playlist_id, const Song& song) {
 
 		return affected_row > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Add song to playlist failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Add song to playlist failed: {}, Code: {}", TAG, e.what(),
+					  e.getErrorCode());
 		return false;
 	}
 }
@@ -165,7 +167,7 @@ bool PlaylistDAO::removeSongFromPlaylist(int playlist_id, const std::string& son
 
 		return affected_row > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Remove song from playlist failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Remove song from playlist failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return false;
 	}
@@ -187,7 +189,7 @@ std::vector<Song> PlaylistDAO::getSongsInPlaylist(int playlist_id) {
 
 		return songs;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get songs in playlist failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get songs in playlist failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return {};
 	}
@@ -207,7 +209,7 @@ int PlaylistDAO::countSongsInPlaylist(int playlist_id) {
 
 		return 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Count songs in playlist failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Count songs in playlist failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return 0;
 	}

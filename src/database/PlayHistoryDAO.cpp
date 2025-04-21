@@ -50,7 +50,7 @@ bool PlayHistoryDAO::addPlayHistory(const PlayHistory& history) {
 
 		return pstmt->executeUpdate() > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Add play history failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Add play history failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
 	}
 }
@@ -76,7 +76,7 @@ std::vector<PlayHistory> PlayHistoryDAO::getUserPlayHistory(int user_id, int lim
 
 		return history_list;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get user play history failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get user play history failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return {};
 	}
@@ -91,7 +91,7 @@ bool PlayHistoryDAO::clearUserPlayHistory(int user_id) {
 
 		return affected_rows > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Clear user play history failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Clear user play history failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return false;
 	}
@@ -108,7 +108,8 @@ bool PlayHistoryDAO::deletePlayHistory(int history_id, int user_id) {
 
 		return affected_rows > 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Delete play history failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Delete play history failed: {}, Code: {}", TAG, e.what(),
+					  e.getErrorCode());
 		return false;
 	}
 }
@@ -128,7 +129,7 @@ int PlayHistoryDAO::getUserTotalPlayCount(int user_id) {
 
 		return 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get user total play count failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get user total play count failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return 0;
 	}
@@ -151,7 +152,7 @@ int PlayHistoryDAO::getUserRecentPlayCount(int user_id, int days) {
 
 		return 0;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get user recent play count failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get user recent play count failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return 0;
 	}
@@ -178,7 +179,8 @@ std::vector<std::pair<std::string, int>> PlayHistoryDAO::getUserTopArtists(int u
 
 		return artists;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get user top artists failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Get user top artists failed: {}, Code: {}", TAG, e.what(),
+					  e.getErrorCode());
 		return {};
 	}
 }
@@ -201,7 +203,8 @@ std::vector<Song> PlayHistoryDAO::getUserTopSongs(int user_id, int limit) {
 
 		return songs;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get user top songs failed: {}, Code: {}", e.what(), e.getErrorCode());
+		spdlog::error("{} Get user top songs failed: {}, Code: {}", TAG, e.what(),
+					  e.getErrorCode());
 		return {};
 	}
 }
@@ -226,7 +229,7 @@ std::vector<std::pair<PlayHistory, int>> PlayHistoryDAO::getMostPlayedSongs(int 
 
 		return songs;
 	} catch (sql::SQLException& e) {
-		spdlog::error(TAG, "Get most played songs failed: {}, Code: {}", e.what(),
+		spdlog::error("{} Get most played songs failed: {}, Code: {}", TAG, e.what(),
 					  e.getErrorCode());
 		return {};
 	}
