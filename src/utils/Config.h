@@ -38,6 +38,14 @@ struct LogConfig {
 	std::string path = "logs/app.log"; // 日志文件路径
 };
 
+struct VerifyServiceConfig {
+	std::string smtp_server_url;
+	std::string smtp_user;
+	std::string smtp_password;
+	int verfication_code_expiry;
+	std::string email_from;
+};
+
 class Config {
 public:
 	~Config() = default;
@@ -60,18 +68,22 @@ public:
 
 	const LogConfig& getLogConfig() const { return m_log_config; }
 
+	const VerifyServiceConfig& getVerifyServiceConfig() const { return m_verify_service_config; }
+
 private:
 	Config() = default;
 	void parseDatabaseConfig(const nlohmann::json& j);
 	void parseServerConfig(const nlohmann::json& j);
 	void parseJWTConfig(const nlohmann::json& j);
 	void parseLogConfig(const nlohmann::json& j);
+	void parseVerifyServiceConfig(const nlohmann::json& j);
 
 private:
 	DatabaseConfig m_db_config;
 	ServerConfig m_server_config;
 	JWTConfig m_jwt_config;
 	LogConfig m_log_config;
+	VerifyServiceConfig m_verify_service_config;
 
 	static std::unique_ptr<Config> m_instance;
 };

@@ -1,6 +1,9 @@
 #include "Server.h"
 #include "Session.h"
+#include "VerifyService.h"
 
+#include <chrono>
+#include <cstdio>
 #include <memory>
 #include <utility>
 
@@ -30,6 +33,12 @@ Server::Server(const std::string& ip, uint16_t port, int num_threads)
 Server::~Server() { stop(); }
 
 void Server::run() {
+	VerifyService* service = VerifyService::getInstance();
+	if (service == nullptr) {
+		spdlog::error("{} VerifyService instance is null", TAG);
+		return;
+	}
+
 	m_running = true;
 	doAccept();
 
@@ -44,8 +53,13 @@ void Server::run() {
 
 	spdlog::info("{} Server listening on {}:{}", TAG, m_addr, m_port);
 
+	// 定时 清理过期的验证码
 	while (m_running) {
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		size_t n = service->cleanupExpiredCodes();
+		if (n > 0) {
+			spdlog::info("{} Cleared {} expired verification codes", TAG, n);
+		}
 	}
 }
 

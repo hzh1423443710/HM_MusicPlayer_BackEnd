@@ -26,5 +26,12 @@
     "log": {
         "level": "info",
         "path": "logs"
+    },
+    "verify_service": {
+        "smtp_server_url": "smtps://smtp.126.com:587",
+        "smtp_user": "h1423443710@126.com",
+        "smtp_password": "RKjDMqAnaAQfEa7k",
+        "verification_code_expiry": 300,
+        "email_from": "h1423443710@126.com"
     }
 }

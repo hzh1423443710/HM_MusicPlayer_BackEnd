@@ -16,7 +16,8 @@ Server* g_server = nullptr;
 
 void setupRoutes(Server& server);
 
-void signalHandler(int signal) {
+void signalHandler(int signo) {
+	std::cout << "Received signal " << signo << ", stopping server..." << "\n";
 	if (g_server != nullptr) {
 		g_server->stop();
 	}
@@ -68,10 +69,18 @@ void setupRoutes(Server& server) {
 					 [user_handler](const HttpRequest& request) {
 						 return user_handler->handleRegister(request);
 					 });
+
+	// 用户获取验证码 	POST /users/verify_code
+	server.addRouter(http::verb::post, std::regex("/users/verify_code\\s*"),
+					 [user_handler](const HttpRequest& request) {
+						 return user_handler->handleGetVerifyCode(request);
+					 });
+
 	// 用户登录 	POST /users/login
 	server.addRouter(
 		http::verb::post, std::regex("/users/login\\s*"),
 		[user_handler](const HttpRequest& request) { return user_handler->handleLogin(request); });
+
 	// 用户信息 	GET /users/{id}
 	server.addRouter(http::verb::get, std::regex("/users/[0-9]+\\s*"),
 					 [](const HttpRequest& request) {

@@ -15,9 +15,7 @@ constexpr const char* TAG = "[Session]";
 Session::Session(tcp::socket socket, Router& router)
 	: m_socket(std::move(socket)), m_router{router} {}
 
-Session::~Session() {
-	// spdlog::info("{} Session closed", TAG);
-}
+Session::~Session() { spdlog::info("{} Session closed", TAG); }
 
 void Session::run() { doRead(); }
 
@@ -50,8 +48,11 @@ void Session::doWrite() {
 							  return;
 						  }
 
+						  // spdlog::info("{} Connection: {}", TAG,
+						  // self->m_request[http::field::connection]);
+
 						  // 关闭连接
-						  if (self->m_response.need_eof()) {
+						  if (self->m_request.need_eof()) {
 							  beast::error_code ec;
 							  self->m_socket.shutdown(tcp::socket::shutdown_send, ec);
 							  return;

@@ -31,6 +31,7 @@ link_libraries(
     fmt::fmt
     jwt-cpp::jwt-cpp
     spdlog::spdlog
+    curl
     ${LIB_MYSQL_CONNECTOR_CPP}
 )
 

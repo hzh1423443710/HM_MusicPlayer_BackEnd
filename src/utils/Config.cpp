@@ -27,23 +27,31 @@ bool Config::loadFromFile(const std::string& filename) {
 		json config_json;
 		ifs >> config_json;
 
-		if (config_json.contains("database")) {
+		if (config_json.contains("database"))
 			parseDatabaseConfig(config_json["database"]);
-		}
+		else
+			return false;
 
-		if (config_json.contains("server")) {
+		if (config_json.contains("server"))
 			parseServerConfig(config_json["server"]);
-		}
+		else
+			return false;
 
-		if (config_json.contains("jwt")) {
+		if (config_json.contains("jwt"))
 			parseJWTConfig(config_json["jwt"]);
-		}
+		else
+			return false;
 
-		if (config_json.contains("log")) {
+		if (config_json.contains("log"))
 			parseLogConfig(config_json["log"]);
-		}
+		else
+			return false;
 
-		spdlog::info("{} Config loaded successfully", TAG);
+		if (config_json.contains("verify_service"))
+			parseVerifyServiceConfig(config_json["verify_service"]);
+		else
+
+			spdlog::info("{} Config loaded successfully", TAG);
 
 		return true;
 	} catch (const json::parse_error& e) {
@@ -141,4 +149,31 @@ void Config::parseLogConfig(const nlohmann::json& j) {
 		m_log_config.path = j["path"].get<std::string>();
 	else
 		throw std::runtime_error("Log path is required");
+}
+
+void Config::parseVerifyServiceConfig(const nlohmann::json& j) {
+	if (j.contains("smtp_server_url") && j["smtp_server_url"].is_string())
+		m_verify_service_config.smtp_server_url = j["smtp_server_url"].get<std::string>();
+	else
+		throw std::runtime_error("SMTP server is required");
+
+	if (j.contains("smtp_user") && j["smtp_user"].is_string())
+		m_verify_service_config.smtp_user = j["smtp_user"].get<std::string>();
+	else
+		throw std::runtime_error("SMTP user is required");
+
+	if (j.contains("smtp_password") && j["smtp_password"].is_string())
+		m_verify_service_config.smtp_password = j["smtp_password"].get<std::string>();
+	else
+		throw std::runtime_error("SMTP password is required");
+
+	if (j.contains("verification_code_expiry") && j["verification_code_expiry"].is_number_integer())
+		m_verify_service_config.verfication_code_expiry = j["verification_code_expiry"].get<int>();
+	else
+		throw std::runtime_error("Verification code expiry is required");
+
+	if (j.contains("email_from") && j["email_from"].is_string())
+		m_verify_service_config.email_from = j["email_from"].get<std::string>();
+	else
+		throw std::runtime_error("Email from is required");
 }

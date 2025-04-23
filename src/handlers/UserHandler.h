@@ -9,6 +9,9 @@ class UserHandler {
 public:
 	UserHandler(const std::string& jwt_secret);
 
+	// 获取验证码
+	HttpResponse handleGetVerifyCode(const HttpRequest& req);
+
 	// 用户注册
 	HttpResponse handleRegister(const HttpRequest& req);
 
@@ -26,6 +29,10 @@ public:
 
 	// 第三方平台账号绑定
 	HttpResponse handleBindPlatform(const HttpRequest& req);
+
+private:
+	// 验证邮箱格式
+	static bool isValidEmail(const std::string& email);
 
 private:
 	UserDAO user_dao;
