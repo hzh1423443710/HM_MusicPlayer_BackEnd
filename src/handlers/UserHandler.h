@@ -12,22 +12,44 @@ public:
 	// 获取验证码
 	HttpResponse handleGetVerifyCode(const HttpRequest& req);
 
-	// 用户注册
+	/**
+	 * @brief 用户注册
+	 */
 	HttpResponse handleRegister(const HttpRequest& req);
 
-	// 用户登录
+	/**
+	 * @brief 用户登录
+	 * @param req HTTP请求
+	 * @return HTTP响应(Header: Authorization: JWT-Token)
+	 */
 	HttpResponse handleLogin(const HttpRequest& req);
 
-	// 获取用户信息
+	/**
+	 * @brief 获取用户信息(JWT-Token)
+	 * @param req HTTP请求
+	 * @return HTTP响应
+	 */
 	HttpResponse handleGetProfile(const HttpRequest& req);
 
-	// 更新用户信息
+	/**
+	 * @brief 更新用户信息(JWT-Token)
+	 * @param req HTTP请求
+	 * @return HTTP响应
+	 */
 	HttpResponse handleUpdateProfile(const HttpRequest& req);
 
-	// 修改密码
+	/**
+	 * @brief 重置密码(JWT-Token)
+	 * @param req HTTP请求
+	 * @return HTTP响应
+	 */
 	HttpResponse handleChangePassword(const HttpRequest& req);
 
-	// 第三方平台账号绑定
+	/**
+	 * @brief 绑定第三方平台账号(JWT-Token)
+	 * @param req HTTP请求
+	 * @return HTTP响应
+	 */
 	HttpResponse handleBindPlatform(const HttpRequest& req);
 
 private:
@@ -37,7 +59,4 @@ private:
 private:
 	UserDAO user_dao;
 	JWTUtil jwt_util;
-
-	// 从请求中提取用户ID
-	bool extractUserIdFromToken(const HttpRequest& req, int& user_id);
 };

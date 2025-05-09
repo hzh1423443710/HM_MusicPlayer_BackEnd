@@ -1,4 +1,5 @@
 #include "JWTUtil.h"
+#include <string>
 
 // 生成 JWT Token
 std::string JWTUtil::generateToken(const std::string& subject,
@@ -26,8 +27,7 @@ std::string JWTUtil::generateToken(const std::string& subject,
 }
 
 // 验证 JWT Token 返回解码后的 JWT
-jwt::decoded_jwt<jwt::traits::kazuho_picojson> JWTUtil::verifyToken(
-	const std::string& token) const {
+std::string JWTUtil::verifyToken(const std::string& token) const {
 	try {
 		auto decoded = jwt::decode(token);
 
@@ -38,12 +38,18 @@ jwt::decoded_jwt<jwt::traits::kazuho_picojson> JWTUtil::verifyToken(
 						   .leeway(60); // 允许60s时间偏差
 
 		verifer.verify(decoded);
-		return decoded;
+
+		auto t = decoded.get_token();
+		// 检查 token 是否过期
+		if (isTokenExpired(t)) return {};
+
+		return t;
 	} catch (const std::exception& e) {
-		throw std::runtime_error("Error verifying token: " + std::string(e.what()));
+		return {};
 	}
 }
 
+// 获取 JWT Token 中的 subject
 std::string JWTUtil::getSubject(const std::string& token) {
 	try {
 		auto decoded = jwt::decode(token);
@@ -53,12 +59,14 @@ std::string JWTUtil::getSubject(const std::string& token) {
 	}
 }
 
+// 获取 JWT Token 中的 claim
 std::string JWTUtil::getClaim(const std::string& token, const std::string& claim_name) {
 	try {
 		auto decoded = jwt::decode(token);
+
 		return decoded.get_payload_claim(claim_name).as_string();
 	} catch (const std::exception& e) {
-		throw std::runtime_error("Error getting claim: " + std::string(e.what()));
+		throw std::runtime_error("getting claim: " + std::string(e.what()));
 	}
 }
 

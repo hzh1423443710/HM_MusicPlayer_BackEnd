@@ -88,11 +88,12 @@ void setupRoutes(Server& server) {
 		return JsonUtil::buildSuccessResponse(
 			request.version(), json{{"msg", "User info updated successfully"}}.dump());
 	});
+
 	// 5.修改密码 			POST /users/password
-	server.addRouter(http::verb::post, "/users/password", [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(
-			request.version(), json{{"message", "Password updated successfully"}}.dump());
-	});
+	server.addRouter(http::verb::post, "/users/password",
+					 [user_handler](const HttpRequest& request) {
+						 return user_handler->handleChangePassword(request);
+					 });
 
 	/*********************************** 歌曲路由 ****************************************/
 	// 1.歌单列表 			POST /playlists
@@ -105,50 +106,50 @@ void setupRoutes(Server& server) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"All songs in playlist retrieved"}}.dump());
 	});
-	// 歌单添加歌曲 	 	POST /playlists/add
+	// 3.歌单添加歌曲 	 	POST /playlists/add
 	server.addRouter(http::verb::post, "/playlists/add", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"msg", "Song added to playlist"}}.dump());
 	});
-	// 歌单删除歌曲 	 	POST /playlists/erase
+	// 4.歌单删除歌曲 	 	POST /playlists/erase
 	server.addRouter(http::verb::post, "/playlists/erase", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"msg", "Song removed from playlist"}}.dump());
 	});
-	// 歌单创建 			POST /playlists/create
+	// 5.歌单创建 			POST /playlists/create
 	server.addRouter(http::verb::post, "/playlists/create", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"Playlist created successfully"}}.dump());
 	});
-	// 歌单删除 			POST /playlists/delete
+	// 6.歌单删除 			POST /playlists/delete
 	server.addRouter(http::verb::post, "/playlists/delete", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(
 			request.version(), json{{"msg", "Playlist deleted successfully"}}.dump());
 	});
 
 	/*********************************** 播放历史路由 ****************************************/
-	// 播放历史所有歌曲	  	POST	/history
+	// 1.播放历史所有歌曲	  	POST	/history
 	server.addRouter(http::verb::post, "/history", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"All songs in history retrieved"}}.dump());
 	});
-	// 播放历史添加歌曲 	POST /history/add
+	// 2.播放历史添加歌曲 	POST /history/add
 	server.addRouter(http::verb::post, "/history/add", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"Song added to history"}}.dump());
 	});
-	// 播放历史删除歌曲 	POST /history/erase
+	// 3.播放历史删除歌曲 	POST /history/erase
 	server.addRouter(http::verb::post, "/history/erase", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"msg", "Song removed from history"}}.dump());
 	});
 
-	// 播放历史清空 		POST /history/clear
+	// 4.播放历史清空 		POST /history/clear
 	server.addRouter(http::verb::post, "/history/clear", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(), json{{"History cleared"}}.dump());
 	});
 
-	// 用户最常听的歌曲 GET /history/like
+	// 5.用户最常听的歌曲 GET /history/like
 	server.addRouter(http::verb::post, "/history/like", [](const HttpRequest& request) {
 		return JsonUtil::buildSuccessResponse(request.version(),
 											  json{{"Most played songs retrieved"}}.dump());

@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 
 #include <chrono>
+#include <cstdlib>
 #include <string>
 #include <regex>
 
@@ -126,8 +127,7 @@ HttpResponse UserHandler::handleLogin(const HttpRequest& req) {
 		}
 
 		// 验证密码
-		if (!PasswordUtil::verifyPassword(PasswordUtil::hashPassword(password),
-										  user->passwd_hash)) {
+		if (!PasswordUtil::verifyPassword(password, user->passwd_hash)) {
 			return JsonUtil::buildErrorResponse(http::status::unauthorized, req.version(),
 												"Incorrect password");
 		}
@@ -138,10 +138,9 @@ HttpResponse UserHandler::handleLogin(const HttpRequest& req) {
 			std::chrono::hours{24 * 120});
 
 		// clang-format off
-        json response = {
+        json body = {
             {"code", 200},
             {"message", "Login successful"}, 
-            {"token", token},
             {"user", {
                 {"id", user->id},
                 {"username", user->username},
@@ -153,7 +152,11 @@ HttpResponse UserHandler::handleLogin(const HttpRequest& req) {
         };
         // clang-format on  
 
-        return JsonUtil::buildSuccessResponse(req.version(), response.dump());
+		// Token 存储在响应头
+		HttpResponse res = JsonUtil::buildSuccessResponse(req.version(), body.dump());
+		res.set("Authorization", token);
+
+		return res;
 	} catch (const json::exception& e) {
         spdlog::error("{} JSON parse error in {}: {}", TAG, __FUNCTION__, e.what());
         return JsonUtil::buildErrorResponse(http::status::bad_request, req.version(),
@@ -163,6 +166,51 @@ HttpResponse UserHandler::handleLogin(const HttpRequest& req) {
         return JsonUtil::buildErrorResponse(http::status::internal_server_error, req.version(),
                                             "Internal server error");
 	}
+}
+
+HttpResponse UserHandler::handleChangePassword(const HttpRequest& req) {
+	try {
+		json j = json::parse(req.body());
+
+		if ( !j.contains("new_password") || !j.contains("verify_code") || !j.contains("email")) { 
+			return JsonUtil::buildErrorResponse(http::status::bad_request, req.version(),
+												"Missing user_id or new_password or verify_code or email");
+		}
+
+		const std::string token = this->jwt_util.verifyToken( req["Authorization"]);
+		if (token.empty()) {
+			return JsonUtil::buildErrorResponse(http::status::unauthorized, req.version(),
+												"Invalid token");
+		}
+
+		int user_id = atoi(JWTUtil::getClaim(token, "id").c_str());
+		std::string new_password = j["new_password"];
+		std::string verify_code = j["verify_code"];
+		std::string email = j["email"];
+
+		if (!VerifyService::getInstance()->verifyCode(email, "reset_password", verify_code)) {
+			return JsonUtil::buildErrorResponse(http::status::bad_request, req.version(),
+												"Invalid verification code");
+		}
+
+		if (!user_dao.updatePassword(user_id,new_password))
+			return JsonUtil::buildErrorResponse(http::status::internal_server_error,
+												req.version(), "Failed to update password");
+
+		return JsonUtil::buildSuccessResponse(req.version(),
+											  json{{"code", 200}, {"message", "Password changed successfully"}}.dump());
+	
+	} catch (const json::exception& e) {
+		spdlog::error("{} JSON parse error in {}: {}", TAG, __FUNCTION__, e.what());
+		return JsonUtil::buildErrorResponse(http::status::bad_request, req.version(),
+											"Invalid JSON format");
+	} catch (const std::exception& e) {
+		spdlog::error("{} Exception in {}: {}", TAG, __FUNCTION__, e.what());
+		return JsonUtil::buildErrorResponse(http::status::internal_server_error, req.version(),
+											"Internal server error");
+	}
+	return {};
+	
 }
 
 bool UserHandler::isValidEmail(const std::string& email) {

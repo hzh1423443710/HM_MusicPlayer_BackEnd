@@ -121,36 +121,15 @@ bool UserDAO::deleteUser(int id) {
 	}
 }
 
-bool UserDAO::verifyPassword(const std::string& username_or_email, const std::string& password) {
-	try {
-		SqlConnGuard guard(db_manager->getConnection());
-		PreStmtPtr pstmt(guard->prepareStatement(
-			"SELECT passwd_hash FROM users WHERE username = ? OR email = ?"));
-		pstmt->setString(1, username_or_email);
-		pstmt->setString(2, username_or_email);
-		ResultSetPtr result(pstmt->executeQuery());
-
-		if (result->next()) {
-			std::string hashed_passwd = result->getString("passwd_hash");
-			return PasswordUtil::verifyPassword(password, hashed_passwd);
-		}
-
-		return false;
-	} catch (const sql::SQLException& e) {
-		spdlog::error("{} Verify Password Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
-		return false;
-	}
-}
-
 bool UserDAO::updatePassword(int user_id, const std::string& new_password) {
 	try {
 		SqlConnGuard guard(db_manager->getConnection());
 		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET passwd_hash = ? WHERE id = ?"));
 		pstmt->setString(1, PasswordUtil::hashPassword(new_password));
 		pstmt->setInt(2, user_id);
-		int affected_row = pstmt->executeUpdate();
+		pstmt->executeUpdate();
 
-		return affected_row > 0;
+		return true;
 	} catch (const sql::SQLException& e) {
 		spdlog::error("{} Update Password Failed: {}, Code:{}", TAG, e.what(), e.getErrorCode());
 		return false;

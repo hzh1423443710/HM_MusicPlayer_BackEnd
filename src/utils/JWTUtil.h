@@ -15,12 +15,11 @@ public:
 							  const std::map<std::string, std::string>& claims = {},
 							  const std::chrono::seconds& valid_for = std::chrono::hours{24}) const;
 
-	jwt::decoded_jwt<jwt::traits::kazuho_picojson> verifyToken(const std::string& token) const;
+	std::string verifyToken(const std::string& token) const;
 
 	static std::string getSubject(const std::string& token);
 
 	static std::string getClaim(const std::string& token, const std::string& claim_name);
-
 	static bool isTokenExpired(const std::string& token);
 
 	void setIssuer(const std::string& issuer) noexcept { m_issuer = issuer; }
