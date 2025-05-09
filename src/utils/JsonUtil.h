@@ -4,9 +4,6 @@
 #include <boost/beast/http/status.hpp>
 
 #include <string>
-#include <string_view>
-#include <vector>
-#include <map>
 
 class JsonUtil {
 public:
@@ -14,12 +11,6 @@ public:
 										   const std::string& message = "Internal Server Error");
 
 	static HttpResponse buildSuccessResponse(unsigned int version, const std::string& json_msg);
-
-	// 获取路径参数
-	static std::vector<std::string> getPathParams(std::string_view path);
-
-	// 获取查询参数
-	static std::map<std::string, std::string> getQueryParams(std::string_view query);
 };
 
 // void connection::file_reply(core::string_view path) {

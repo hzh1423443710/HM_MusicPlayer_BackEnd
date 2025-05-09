@@ -28,8 +28,8 @@ public:
 
 	void stop();
 
-	void addRouter(const http::verb& method, const std::regex& path_regex, RouterHandler handler) {
-		m_router.addRouter(method, path_regex, std::move(handler));
+	void addRouter(const http::verb& method, const std::string& url, RouterHandler handler) {
+		m_router.addRouter(method, url, std::move(handler));
 	}
 
 private:
