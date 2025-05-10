@@ -77,23 +77,30 @@ void setupRoutes(Server& server) {
 		return user_handler->handleLogin(request);
 	});
 
-	// 3.获取用户信息 		POST /users/info
-	server.addRouter(http::verb::post, "/users/info", [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(
-			request.version(), json{{"msg", "User info retrieved successfully"}}.dump());
+	// 3.获取用户信息 		GET /users/info
+	server.addRouter(http::verb::get, "/users/info", [user_handler](const HttpRequest& request) {
+		return user_handler->handleGetProfile(request);
 	});
 
-	// 4.用户信息更新  		POST /users/update
-	server.addRouter(http::verb::post, "/users/update", [](const HttpRequest& request) {
-		return JsonUtil::buildSuccessResponse(
-			request.version(), json{{"msg", "User info updated successfully"}}.dump());
+	// 4.修改用户头像 		POST /users/avatar
+	server.addRouter(http::verb::post, "/users/avatar", [user_handler](const HttpRequest& request) {
+		return user_handler->handleUpdateAvatar(request);
 	});
 
-	// 5.修改密码 			POST /users/password
+	// 5.获取用户头像 		GET /users/avatar
+	server.addRouter(http::verb::get, "/users/avatar", [user_handler](const HttpRequest& request) {
+		return user_handler->handleGetAvatar(request);
+	});
+
+	// 6.修改密码 			POST /users/password
 	server.addRouter(http::verb::post, "/users/password",
 					 [user_handler](const HttpRequest& request) {
 						 return user_handler->handleChangePassword(request);
 					 });
+	// 7.绑定第三方平台账号 	POST /users/bind
+	server.addRouter(http::verb::post, "/users/bind", [user_handler](const HttpRequest& request) {
+		return user_handler->handleBindPlatform(request);
+	});
 
 	/*********************************** 歌曲路由 ****************************************/
 	// 1.歌单列表 			POST /playlists

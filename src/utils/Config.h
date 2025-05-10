@@ -22,8 +22,6 @@ struct ServerConfig {
 	std::string host = "0.0.0.0";
 	uint16_t port = 8080;
 	int threads = 4;
-	// bool enable_cors = true;
-	// std::vector<std::string> cors_allowed_origins = {"*"};
 	uint32_t request_timeout = 30; // 秒
 };
 

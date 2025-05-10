@@ -21,7 +21,16 @@ void Router::addRouter(const http::verb& method, const std::string& url, RouterH
 
 HttpResponse Router::handleRouter(const HttpRequest& request) {
 	const http::verb method = request.method();
-	if (method == http::verb::get) return m_router_get[request.target()](request);
-	if (method == http::verb::post) return m_router_post[request.target()](request);
+	const std::string target = request.target();
+	spdlog::info("{} {} {}", __FUNCTION__, request.method_string(), target);
+
+	if (method == http::verb::get && m_router_get.find(target) != m_router_get.end()) {
+		return m_router_get[target](request);
+	}
+
+	if (method == http::verb::post && m_router_post.find(target) != m_router_post.end()) {
+		return m_router_post[target](request);
+	}
+
 	return JsonUtil::buildErrorResponse(http::status::not_found, request.version(), "Not found");
 }

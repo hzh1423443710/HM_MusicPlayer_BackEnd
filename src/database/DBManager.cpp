@@ -28,7 +28,8 @@ DBManager::~DBManager() {
 	}
 
 	m_connections.clear();
-	spdlog::info("{} Close connection pool success", TAG);
+	// TODO exception ?
+	// spdlog::info("{} Close connection pool success", TAG);
 }
 
 DBManager::DBManager(std::string host, uint16_t port, std::string user, std::string passwd,

@@ -24,7 +24,6 @@ find_library(LIB_MYSQL_CONNECTOR_CPP NAMES mysqlcppconn PATHS ${LIB_MYSQL_CONNEC
 # 链接库
 link_libraries(
     Boost::boost
-    boost_url
     nlohmann_json::nlohmann_json
     OpenSSL::SSL
     OpenSSL::Crypto

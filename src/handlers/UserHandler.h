@@ -32,11 +32,18 @@ public:
 	HttpResponse handleGetProfile(const HttpRequest& req);
 
 	/**
-	 * @brief 更新用户信息(JWT-Token)
+	 * @brief 更新用户头像(JWT-Token)
 	 * @param req HTTP请求
 	 * @return HTTP响应
 	 */
-	HttpResponse handleUpdateProfile(const HttpRequest& req);
+	HttpResponse handleUpdateAvatar(const HttpRequest& req);
+
+	/**
+	 * @brief 获取用户头像(JWT-Token)
+	 * @param req HTTP请求
+	 * @return HTTP响应
+	 */
+	HttpResponse handleGetAvatar(const HttpRequest& req);
 
 	/**
 	 * @brief 重置密码(JWT-Token)
@@ -59,4 +66,5 @@ private:
 private:
 	UserDAO user_dao;
 	JWTUtil jwt_util;
+	const std::string AVATAR_PATH = "./avatars";
 };

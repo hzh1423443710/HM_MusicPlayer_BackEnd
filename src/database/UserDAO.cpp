@@ -142,9 +142,9 @@ bool UserDAO::updateQQId(int user_id, const std::string& qq_id) {
 		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET qq_id = ? WHERE id = ?"));
 		pstmt->setString(1, qq_id);
 		pstmt->setInt(2, user_id);
-		int affected_row = pstmt->executeUpdate();
+		pstmt->executeUpdate();
 
-		return affected_row > 0;
+		return true;
 	} catch (const sql::SQLException& e) {
 		spdlog::error("{} Update QQ ID Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
@@ -157,9 +157,9 @@ bool UserDAO::updateNetEaseId(int user_id, const std::string& netease_id) {
 		PreStmtPtr pstmt(guard->prepareStatement("UPDATE users SET netease_id = ? WHERE id = ?"));
 		pstmt->setString(1, netease_id);
 		pstmt->setInt(2, user_id);
-		int affected_row = pstmt->executeUpdate();
+		pstmt->executeUpdate();
 
-		return affected_row > 0;
+		return true;
 	} catch (const sql::SQLException& e) {
 		spdlog::error("{} Update NetEase ID Failed: {}, Code: {}", TAG, e.what(), e.getErrorCode());
 		return false;
