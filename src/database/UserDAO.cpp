@@ -57,13 +57,11 @@ std::optional<User> UserDAO::getUserById(int id) {
 	}
 }
 
-std::optional<User> UserDAO::getUserByUsernameOrEmail(const std::string& username_or_email) {
+std::optional<User> UserDAO::getUserByUsername(const std::string& username) {
 	try {
 		SqlConnGuard guard(db_manager->getConnection());
-		PreStmtPtr pstmt(
-			guard->prepareStatement("SELECT * FROM users WHERE username = ? OR email = ?"));
-		pstmt->setString(1, username_or_email);
-		pstmt->setString(2, username_or_email);
+		PreStmtPtr pstmt(guard->prepareStatement("SELECT * FROM users WHERE username = ?"));
+		pstmt->setString(1, username);
 
 		ResultSetPtr result(pstmt->executeQuery());
 		if (result->next()) {
@@ -72,7 +70,7 @@ std::optional<User> UserDAO::getUserByUsernameOrEmail(const std::string& usernam
 
 		return std::nullopt;
 	} catch (sql::SQLException& e) {
-		spdlog::error("{} Get User By Username or Email Failed: {}, Code:{}", TAG, e.what(),
+		spdlog::error("{} Get User By Username Failed: {}, Code:{}", TAG, e.what(),
 					  e.getErrorCode());
 		return std::nullopt;
 	}

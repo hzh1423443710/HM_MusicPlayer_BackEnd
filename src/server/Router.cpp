@@ -22,7 +22,6 @@ void Router::addRouter(const http::verb& method, const std::string& url, RouterH
 HttpResponse Router::handleRouter(const HttpRequest& request) {
 	const http::verb method = request.method();
 	const std::string target = request.target();
-	spdlog::info("{} {} {}", __FUNCTION__, request.method_string(), target);
 
 	if (method == http::verb::get && m_router_get.find(target) != m_router_get.end()) {
 		return m_router_get[target](request);

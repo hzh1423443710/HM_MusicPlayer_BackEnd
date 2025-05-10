@@ -81,14 +81,14 @@ HttpResponse UserHandler::handleRegister(const HttpRequest& req) {
 		}
 
 		// 检查用户是否已存在
-		if (user_dao.getUserByUsernameOrEmail(username)) {
+		if (user_dao.getUserByUsername(username)) {
 			return JsonUtil::buildErrorResponse(http::status::conflict, req.version(),
 												"Username already exists");
 		}
 
 		User user;
 		user.username = username;
-		user.passwd_hash = PasswordUtil::hashPassword(password);
+		user.passwd_hash = password;
 		user.email = email;
 
 		if (!user_dao.createUser(user)) {
@@ -115,16 +115,16 @@ HttpResponse UserHandler::handleLogin(const HttpRequest& req) {
 	try {
 		json j = json::parse(req.body());
 
-		if (!j.contains("username_or_email") || !j.contains("password")) {
+		if (!j.contains("username") || !j.contains("password")) {
 			return JsonUtil::buildErrorResponse(http::status::bad_request, req.version(),
-												"Missing username or email or password");
+												"Missing username or password");
 		}
 
-		std::string username_or_email = j["username_or_email"];
+		std::string username = j["username"];
 		std::string password = j["password"];
 
 		// 检查用户是否存在
-		auto user = user_dao.getUserByUsernameOrEmail(username_or_email);
+		auto user = user_dao.getUserByUsername(username);
 		if (!user) {
 			return JsonUtil::buildErrorResponse(http::status::not_found, req.version(),
 												"User not found");

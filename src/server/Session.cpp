@@ -15,7 +15,9 @@ constexpr const char* TAG = "[Session]";
 Session::Session(tcp::socket socket, Router& router)
 	: m_socket(std::move(socket)), m_router{router} {}
 
-Session::~Session() { spdlog::info("{} Session closed", TAG); }
+Session::~Session() {
+	// spdlog::info("{} Session closed", TAG);
+}
 
 void Session::run() { doRead(); }
 
@@ -67,6 +69,7 @@ void Session::doWrite() {
 void Session::handleRequest() {
 	try {
 		m_response = m_router.handleRouter(m_request);
+		spdlog::info("{} {} {}", __FUNCTION__, m_request.method_string(), m_request.target());
 	} catch (const std::exception& e) {
 		// 500 错误
 		spdlog::error("{} Handle Request: {}", TAG, e.what());

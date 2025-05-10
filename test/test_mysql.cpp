@@ -23,7 +23,7 @@ void test_user_dao() {
 		std::cout << "Failed to create user!\n";
 	}
 
-	auto ret_user = user_dao.getUserByUsernameOrEmail("hzh");
+	auto ret_user = user_dao.getUserByUsername("hzh");
 	if (ret_user) {
 		std::cout << "User found: " << ret_user->username << "\n";
 	} else {
